@@ -405,7 +405,7 @@ return new class extends Migration
         Schema::create('otp', function (Blueprint $table) {
             $table->id();
             $table->bigInteger('id_member');
-            $table->string('email', 200)->nullable()->default('')->index();
+            $table->string('email', 191)->nullable()->default('')->index();
             $table->string('type', 50)->nullable()->default('')->index('type_otp');
             $table->string('ip_address', 45)->nullable();
             $table->string('platform', 50)->nullable();
@@ -712,7 +712,7 @@ return new class extends Migration
             $table->id();
             $table->integer('id_product')->index('pp_product');
             $table->string('name', 100)->index('pp_name');
-            $table->string('varian', 200)->index('pp_varian');
+            $table->string('varian', 140)->index('pp_varian');
             $table->double('bv')->nullable();
             $table->double('price_hpp')->default(0);
             $table->double('price')->default(0);
