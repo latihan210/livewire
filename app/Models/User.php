@@ -20,9 +20,40 @@ class User extends Authenticatable implements MustVerifyEmail
      * @var list<string>
      */
     protected $fillable = [
+        'username',
         'name',
         'email',
         'password',
+        'package',
+        'sponsor',
+        'sponsor_uid',
+        'parent',
+        'parent_uid',
+        'position',
+        'group',
+        'gen',
+        'level',
+        'tree_sponsor',
+        'tree',
+        'phone',
+        'type',
+        'status',
+        'province',
+        'district',
+        'bank',
+        'total_omzet',
+        'package_omzet',
+        'as_stockist',
+        'as_stockist_pusat',
+        'to_stockist',
+        'shop_invoice',
+        'shop_uniquecode',
+        'change_password',
+        'member_hu',
+        'is_ro',
+        'last_login',
+        'referral_code',
+        'agree_ethic'
     ];
 
     /**
@@ -32,6 +63,8 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     protected $hidden = [
         'password',
+        'password_pin',
+        'password_trx',
         'two_factor_secret',
         'two_factor_recovery_codes',
         'remember_token',

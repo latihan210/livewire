@@ -21,13 +21,39 @@ class CreateNewUser implements CreatesNewUsers
     {
         Validator::make($input, [
             ...$this->profileRules(),
+            'username' => ['required', 'string', 'max:200', 'unique:users'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => $this->passwordRules(),
         ])->validate();
 
         return User::create([
+            'username' => $input['username'],
             'name' => $input['name'],
             'email' => $input['email'],
             'password' => $input['password'],
+            // Default values
+            'package' => 'free',
+            'sponsor' => 0,
+            'parent' => 0,
+            'position' => '',
+            'group' => 0,
+            'gen' => 0,
+            'level' => 0,
+            'tree_sponsor' => '',
+            'tree' => '',
+            'province' => 0,
+            'district' => 0,
+            'bank' => 0,
+            'total_omzet' => 0,
+            'package_omzet' => 0,
+            'as_stockist' => 0,
+            'as_stockist_pusat' => 0,
+            'to_stockist' => 0,
+            'shop_invoice' => 0,
+            'shop_uniquecode' => 0,
+            'change_password' => 0,
+            'member_hu' => 0,
+            'is_ro' => 0,
         ]);
     }
 }
