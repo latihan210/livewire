@@ -84,6 +84,38 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Mendapatkan data Sponsor (Upline Rekrutmen)
+     */
+    public function uplineSponsor()
+    {
+        return $this->belongsTo(User::class, 'sponsor', 'id');
+    }
+
+    /**
+     * Mendapatkan daftar member yang di-sponsori (Downline Rekrutmen)
+     */
+    public function referrals()
+    {
+        return $this->hasMany(User::class, 'sponsor', 'id');
+    }
+
+    /**
+     * Mendapatkan data Parent (Atasan langsung di pohon jaringan)
+     */
+    public function uplineTree()
+    {
+        return $this->belongsTo(User::class, 'parent', 'id');
+    }
+
+    /**
+     * Mendapatkan Downline di pohon jaringan (Kiri/Kanan)
+     */
+    public function downlines()
+    {
+        return $this->hasMany(User::class, 'parent', 'id');
+    }
+
+    /**
      * Get the user's initials
      */
     public function initials(): string

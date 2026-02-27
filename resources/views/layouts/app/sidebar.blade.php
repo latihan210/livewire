@@ -17,14 +17,16 @@
                 {{ __('Dashboard') }}
             </flux:sidebar.item>
 
-            <flux:navlist.group expandable :heading="__('Data Member')" icon="users">
-                <flux:navlist.item :href="route('profile.edit')" wire:navigate>
-                    {{ __('Semua Member') }}
+            {{-- Looping Otomatis Berdasarkan config/menu.php --}}
+            @foreach (config('menu') as $group)
+            <flux:navlist.group expandable :heading="__($group['heading'])" :icon="$group['icon']">
+                @foreach ($group['items'] as $item)
+                <flux:navlist.item :href="Route::has($item['route']) ? route($item['route']) : '#'" wire:navigate>
+                    {{ __($item['label']) }}
                 </flux:navlist.item>
-                <flux:navlist.item :href="route('profile.edit')" wire:navigate>
-                    {{ __('Tambah Baru') }}
-                </flux:navlist.item>
+                @endforeach
             </flux:navlist.group>
+            @endforeach
         </flux:sidebar.nav>
 
         <flux:spacer />
