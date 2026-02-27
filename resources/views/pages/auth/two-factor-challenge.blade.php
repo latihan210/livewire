@@ -21,20 +21,17 @@
                             : $dispatch('focus-2fa-auth-code');
                     });
                 },
-            }"
-        >
+            }">
             <div x-show="!showRecoveryInput">
                 <x-auth-header
-                    :title="__('Authentication Code')"
-                    :description="__('Enter the authentication code provided by your authenticator application.')"
-                />
+                    :title="__('Authentication Code | ' . config('app.name'))"
+                    :description="__('Enter the authentication code provided by your authenticator application.')" />
             </div>
 
             <div x-show="showRecoveryInput">
                 <x-auth-header
-                    :title="__('Recovery Code')"
-                    :description="__('Please confirm access to your account by entering one of your emergency recovery codes.')"
-                />
+                    :title="__('Recovery Code | ' . config('app.name'))"
+                    :description="__('Please confirm access to your account by entering one of your emergency recovery codes.')" />
             </div>
 
             <form method="POST" action="{{ route('two-factor.login.store') }}">
@@ -49,8 +46,7 @@
                                 name="code"
                                 label="OTP Code"
                                 label:sr-only
-                                class="mx-auto"
-                             />
+                                class="mx-auto" />
                         </div>
                     </div>
 
@@ -62,22 +58,20 @@
                                 x-ref="recovery_code"
                                 x-bind:required="showRecoveryInput"
                                 autocomplete="one-time-code"
-                                x-model="recovery_code"
-                            />
+                                x-model="recovery_code" />
                         </div>
 
                         @error('recovery_code')
-                            <flux:text color="red">
-                                {{ $message }}
-                            </flux:text>
+                        <flux:text color="red">
+                            {{ $message }}
+                        </flux:text>
                         @enderror
                     </div>
 
                     <flux:button
                         variant="primary"
                         type="submit"
-                        class="w-full"
-                    >
+                        class="w-full">
                         {{ __('Continue') }}
                     </flux:button>
                 </div>
