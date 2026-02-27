@@ -6,24 +6,50 @@
 </head>
 
 <body class="min-h-screen bg-white dark:bg-zinc-800">
-    <flux:sidebar sticky collapsible="mobile"
-        class="border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
+    <flux:sidebar sticky collapsible class="border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
         <flux:sidebar.header>
             <x-app-logo :sidebar="true" href="{{ route('dashboard') }}" wire:navigate />
-            <flux:sidebar.collapse class="lg:hidden" />
+            <flux:sidebar.collapse />
         </flux:sidebar.header>
 
         <flux:sidebar.nav>
-            <flux:sidebar.group :heading="__('Platform')" class="grid">
-                <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')"
-                    wire:navigate>
-                    {{ __('Dashboard') }}
-                </flux:sidebar.item>
+            <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')"
+                wire:navigate>
+                {{ __('Dashboard') }}
+            </flux:sidebar.item>
+            <flux:sidebar.group icon="users" :heading="__('Member')" class="grid">
                 <flux:sidebar.item icon="users" :href="route('profile.edit')"
                     :current="request()->routeIs('profile.edit')" wire:navigate>
-                    {{ __('List') }}
+                    {{ __('Profile') }}
                 </flux:sidebar.item>
             </flux:sidebar.group>
+
+            {{-- <flux:sidebar.nav>
+                <flux:accordion transition>
+                    <flux:accordion.item>
+                        <flux:accordion.heading>
+                            <flux:sidebar.item icon="users" class="w-full text-left">
+                                {{ __('Data Member') }}
+                            </flux:sidebar.item>
+                        </flux:accordion.heading>
+
+                        <flux:accordion.content>
+                            <div class="space-y-1 ml-4 border-l border-zinc-200 dark:border-zinc-700 pl-4 mt-1">
+                                <flux:sidebar.item :href="route('dashboard')" size="sm">
+                                    {{ __('Semua Member') }}
+                                </flux:sidebar.item>
+                                <flux:sidebar.item :href="route('dashboard')" size="sm">
+                                    {{ __('Tambah Member') }}
+                                </flux:sidebar.item>
+                            </div>
+                        </flux:accordion.content>
+                    </flux:accordion.item>
+                </flux:accordion>
+            </flux:sidebar.nav>
+            sekarang lanjut optimalkan agar ketika saya mengerjakan project laravel tidak harus serba tulis atau buat
+            manual agar bisa efisien
+            --}}
+
         </flux:sidebar.nav>
 
         <flux:spacer />
