@@ -22,7 +22,7 @@ class MigrasiUserSeeder extends Seeder
 
         // Ambil struktur kolom di database Laravel Anda
         $userCols = Schema::getColumnListing('users');
-        $members = DB::connection('ysl_dbs')->table('jpb_member')->get();
+        $members = DB::connection('ysl_dbs')->table('jpb_member')->get(); // latihan
         $usersData = [];
         $usedEmails = [];
 
@@ -94,12 +94,12 @@ class MigrasiUserSeeder extends Seeder
         ];
 
         foreach ($masters as $old => $new) {
-            if (Schema::hasTable($new) && Schema::connection('ysl_dbs')->hasTable($old)) {
+            if (Schema::hasTable($new) && Schema::connection('ysl_dbs')->hasTable($old)) { // latihan
                 $this->command->info("Memindahkan: $old -> $new...");
                 DB::table($new)->truncate();
 
                 $cols = Schema::getColumnListing($new);
-                $sourceData = DB::connection('ysl_dbs')->table($old)->get();
+                $sourceData = DB::connection('ysl_dbs')->table($old)->get(); // latihan
                 $insertData = [];
 
                 foreach ($sourceData as $row) {
