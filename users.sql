@@ -108,3 +108,4 @@ INSERT INTO `users` VALUES (1, 'Yosep Solahudin', 'solahudin210', 'yosepsolahudi
 
 SET FOREIGN_KEY_CHECKS = 1;
 -- $2y$05$Z2VsarGZCYg9Rt2S9hwiB.89XywfKV80gzsRj/WZvMA8OFSZzOew2
+-- $2y$05$ZI3ZeopIrWkSiSZfvXEo3.LHwmm1vsu0BVBkXJsMCh.yqPUpOZmHe Cic_jpb000

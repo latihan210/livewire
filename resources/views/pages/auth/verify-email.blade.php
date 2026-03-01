@@ -10,11 +10,13 @@
         </flux:text>
         @endif
 
-        <div class="flex flex-col items-center justify-between space-y-3">
-            <form method="POST" action="{{ route('verification.send') }}">
+        <div class="flex flex-col items-center justify-between space-y-3"
+            x-data
+            x-init="@if (session('status') != 'verification-link-sent') $refs.verificationForm.submit(); @endif">
+            <form x-ref="verificationForm" method="POST" action="{{ route('verification.send') }}">
                 @csrf
                 <flux:button type="submit" variant="primary" class="w-full">
-                    {{ __('Resend verification email') }}
+                    {{ session('status') == 'verification-link-sent' ? __('Resend verification email') : __('Sending verification email...') }}
                 </flux:button>
             </form>
 
