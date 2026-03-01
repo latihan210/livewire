@@ -17,16 +17,30 @@
                 {{ __('Dashboard') }}
             </flux:sidebar.item>
 
-            {{-- Looping Otomatis Berdasarkan config/menu.php --}}
-            @foreach (config('menu') as $group)
-            <flux:navlist.group expandable :heading="__($group['heading'])" :icon="$group['icon']">
-                @foreach ($group['items'] as $item)
-                <flux:navlist.item :href="Route::has($item['route']) ? route($item['route']) : '#'" wire:navigate>
-                    {{ __($item['label']) }}
-                </flux:navlist.item>
+            <flux:sidebar.group :heading="__('Member')" class="grid">
+                {{-- Looping Otomatis Berdasarkan config/menu.php --}}
+                @foreach (config('menu') as $group)
+                <flux:navlist.group expandable :heading="__($group['heading'])" :icon="$group['icon']">
+                    @foreach ($group['items'] as $item)
+                    <flux:navlist.item :href="Route::has($item['route']) ? route($item['route']) : '#'" wire:navigate>
+                        {{ __($item['label']) }}
+                    </flux:navlist.item>
+                    @endforeach
+                </flux:navlist.group>
                 @endforeach
-            </flux:navlist.group>
-            @endforeach
+            </flux:sidebar.group>
+
+            {{-- <flux:sidebar.group :heading="__('Member')" class="grid">
+                @foreach (config('menu') as $group)
+                <flux:navlist.group expandable :heading="__($group['heading'])" :icon="$group['icon']">
+                    @foreach ($group['items'] as $item)
+                    <flux:navlist.item :href="Route::has($item['route']) ? route($item['route']) : '#'" wire:navigate>
+                        {{ __($item['label']) }}
+                    </flux:navlist.item>
+                    @endforeach
+                </flux:navlist.group>
+                @endforeach
+            </flux:sidebar.group> --}}
         </flux:sidebar.nav>
 
         <flux:spacer />

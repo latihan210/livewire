@@ -4,8 +4,10 @@ namespace App\Providers;
 
 use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Fortify\ResetUserPassword;
+use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
@@ -36,6 +38,38 @@ class FortifyServiceProvider extends ServiceProvider
             $event->user->forceFill([
                 'last_login' => now(),
             ])->save();
+        });
+
+        Fortify::authenticateUsing(function (Request $request) {
+            $user = User::where('username', $request->input('username'))->first();
+
+            if ($user) {
+                // 1. Cek Login Normal (Bcrypt - Bawaan Laravel)
+                if (Hash::check($request->password, $user->password)) {
+                    // OPTIONAL: Jika password masih pakai cost rendah (05) dari sistem lama,
+                    // otomatis update ke standar baru (cost 10/12) agar lebih aman.
+                    if (Hash::needsRehash($user->password)) {
+                        $user->forceFill([
+                            'password' => $request->password,
+                        ])->save();
+                    }
+                    return $user;
+                }
+
+                // 2. Cek Login Legacy (MD5 - Migrasi)
+                // MD5 selalu 32 karakter. Kita cek manual.
+                if (strlen($user->password) === 32 && $user->password === md5($request->password)) {
+
+                    $user->forceFill([
+                        'password' => $request->password,
+                    ])->save();
+
+                    return $user;
+                }
+            }
+
+            // Login gagal
+            return null;
         });
     }
 

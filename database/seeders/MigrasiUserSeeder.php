@@ -22,7 +22,7 @@ class MigrasiUserSeeder extends Seeder
 
         // Ambil struktur kolom di database Laravel Anda
         $userCols = Schema::getColumnListing('users');
-        $members = DB::connection('latihan')->table('jpb_member')->get();
+        $members = DB::connection('ysl_dbs')->table('jpb_member')->get();
         $usersData = [];
         $usedEmails = [];
 
@@ -33,7 +33,12 @@ class MigrasiUserSeeder extends Seeder
             // A. Pindahkan semua data jika nama kolomnya sama persis (idcard, address, dll)
             foreach ($userCols as $col) {
                 if (array_key_exists($col, $data)) {
-                    $filtered[$col] = $data[$col];
+                    $val = $data[$col];
+                    // Bersihkan semua kolom tanggal (termasuk birthdate)
+                    if (str_contains($col, 'date') || str_contains($col, 'time')) {
+                        $val = $this->cleanDate($val, true);
+                    }
+                    $filtered[$col] = $val;
                 }
             }
 
@@ -46,8 +51,11 @@ class MigrasiUserSeeder extends Seeder
             $oldPassword = $data['password'];
             if (str_starts_with($oldPassword, '$2y$') || str_starts_with($oldPassword, '$2a$')) {
                 $filtered['password'] = $oldPassword; // Sudah hash, salin langsung
+            } elseif (preg_match('/^[a-f0-9]{32}$/', $oldPassword)) {
+                $filtered['password'] = $oldPassword; // Format MD5 (32 hex), simpan apa adanya untuk diproses saat login
             } else {
-                $filtered['password'] = Hash::make($oldPassword); // Belum hash (plain text), kita hash sekarang
+                // Jika bukan MD5 dan bukan Bcrypt, anggap plain text lalu hash
+                $filtered['password'] = Hash::make($oldPassword);
             }
 
             // D. Proteksi Email Duplikat
@@ -86,12 +94,12 @@ class MigrasiUserSeeder extends Seeder
         ];
 
         foreach ($masters as $old => $new) {
-            if (Schema::hasTable($new) && Schema::connection('latihan')->hasTable($old)) {
+            if (Schema::hasTable($new) && Schema::connection('ysl_dbs')->hasTable($old)) {
                 $this->command->info("Memindahkan: $old -> $new...");
                 DB::table($new)->truncate();
 
                 $cols = Schema::getColumnListing($new);
-                $sourceData = DB::connection('latihan')->table($old)->get();
+                $sourceData = DB::connection('ysl_dbs')->table($old)->get();
                 $insertData = [];
 
                 foreach ($sourceData as $row) {
