@@ -5,115 +5,141 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Hash;
 
 class MigrasiUserSeeder extends Seeder
 {
     public function run()
     {
+        // Matikan proteksi Foreign Key sementara
         DB::statement('SET FOREIGN_KEY_CHECKS = 0;');
 
-        // --- A. USERS ---
-        $this->command->info("Proses: jpb_member -> users...");
+        // ====================================================================
+        // 1. MAPPING USERS SECARA KESELURUHAN (Semua Kolom Disedot)
+        // ====================================================================
+        $this->command->info("Proses: jpb_member -> users (Menyalin seluruh kolom)...");
         DB::table('users')->truncate();
+
+        // Ambil struktur kolom di database Laravel Anda
+        $userCols = Schema::getColumnListing('users');
         $members = DB::connection('latihan')->table('jpb_member')->get();
+        $usersData = [];
         $usedEmails = [];
 
         foreach ($members as $m) {
-            $created = ($m->datecreated == '0000-00-00 00:00:00' || !$m->datecreated) ? now() : $m->datecreated;
-            $updated = ($m->datemodified == '0000-00-00 00:00:00' || !$m->datemodified) ? $created : $m->datemodified;
-            $email = trim($m->email);
+            $data = (array)$m;
+            $filtered = [];
+
+            // A. Pindahkan semua data jika nama kolomnya sama persis (idcard, address, dll)
+            foreach ($userCols as $col) {
+                if (array_key_exists($col, $data)) {
+                    $filtered[$col] = $data[$col];
+                }
+            }
+
+            // B. Sesuaikan kolom yang berubah nama atau butuh pembersihan
+            $filtered['created_at'] = $this->cleanDate($data['datecreated'] ?? null);
+            $filtered['updated_at'] = $this->cleanDate($data['datemodified'] ?? null);
+
+            // C. PASSWORD LOGIC
+            // Cek apakah password lama sudah berupa hash (diawali $2y$ atau $2a$)
+            $oldPassword = $data['password'];
+            if (str_starts_with($oldPassword, '$2y$') || str_starts_with($oldPassword, '$2a$')) {
+                $filtered['password'] = $oldPassword; // Sudah hash, salin langsung
+            } else {
+                $filtered['password'] = Hash::make($oldPassword); // Belum hash (plain text), kita hash sekarang
+            }
+
+            // D. Proteksi Email Duplikat
+            $email = trim($data['email'] ?? '');
             if (empty($email)) {
-                $email = $m->username . '@mail.com';
+                $email = $data['username'] . '@mail.com';
             }
             if (in_array($email, $usedEmails)) {
-                $email = $m->username . '.' . $email;
+                $email = $data['username'] . '.' . $email;
             }
             $usedEmails[] = $email;
+            $filtered['email'] = $email;
 
-            DB::table('users')->insert([
-                'id' => $m->id,
-                'username' => $m->username,
-                'password' => $m->password,
-                'name' => $m->name,
-                'email' => $email,
-                'phone' => $m->phone,
-                'sponsor' => $m->sponsor,
-                'parent' => $m->parent,
-                'position' => $m->position,
-                'bank' => $m->bank,
-                'bill' => $m->bill,
-                'bill_name' => $m->bill_name,
-                'status' => $m->status,
-                'created_at' => $created,
-                'updated_at' => $updated,
-            ]);
+            $usersData[] = $filtered;
         }
 
-        // --- B. WITHDRAW (Verified: Both use 'id_member' and 'bill') ---
-        $this->command->info("Proses: jpb_withdraw -> withdraw...");
-        DB::table('withdraw')->truncate();
-        foreach (DB::connection('latihan')->table('jpb_withdraw')->get() as $wd) {
-            DB::table('withdraw')->insert([
-                'id' => $wd->id,
-                'id_member' => $wd->id_member, // SESUAI SQL: Bukan member_id
-                'bank' => $wd->bank,
-                'bill' => $wd->bill,
-                'bill_name' => $wd->bill_name,
-                'nominal' => $wd->nominal,
-                'status' => $wd->status,
-                'datecreated' => ($wd->datecreated == '0000-00-00 00:00:00') ? now() : $wd->datecreated,
-                'datemodified' => ($wd->datemodified == '0000-00-00 00:00:00') ? now() : $wd->datemodified,
-            ]);
+        // Simpan ke database users
+        foreach (array_chunk($usersData, 500) as $chunk) {
+            DB::table('users')->insert($chunk);
         }
 
-        // --- C. BONUS (Verified: Both use 'id_member', Source uses 'bonus_type', Target uses 'type') ---
-        $this->command->info("Proses: jpb_bonus -> bonus...");
-        DB::table('bonus')->truncate();
-        foreach (DB::connection('latihan')->table('jpb_bonus')->get() as $b) {
-            DB::table('bonus')->insert([
-                'id' => $b->id,
-                'id_member' => $b->id_member, // SESUAI SQL: Bukan member_id
-                'type' => $b->bonus_type,
-                'nominal' => $b->nominal,
-                'description' => $b->description,
-                'status' => $b->status,
-                'datecreated' => ($b->datecreated == '0000-00-00 00:00:00') ? now() : $b->datecreated,
-            ]);
-        }
-
-        // --- D. MASTER TABLES (Verified Column Mappings) ---
+        // ====================================================================
+        // 2. MAPPING TRANSAKSI & MASTER (Otomatis menyesuaikan kolom)
+        // ====================================================================
         $masters = [
-            'jpb_area' => 'area',
-            'jpb_banks' => 'banks',
-            'jpb_config' => 'config',
-            'jpb_product' => 'product',
-            'jpb_news' => 'news',
-            'jpb_staff' => 'staff',
-            'jpb_auto_ro' => 'auto_ro',
-            'jpb_ewallet' => 'ewallet',
-            'jpb_pin' => 'pin'
+            'jpb_withdraw' => 'withdraw',
+            'jpb_bonus'    => 'bonus',
+            'jpb_area'     => 'area',
+            'jpb_banks'    => 'banks',
+            'jpb_product'  => 'product',
+            'jpb_news'     => 'news',
+            'jpb_staff'    => 'staff',
+            'jpb_auto_ro'  => 'auto_ro',
+            'jpb_ewallet'  => 'ewallet',
+            'jpb_pin'      => 'pin'
         ];
 
         foreach ($masters as $old => $new) {
-            if (Schema::hasTable($new)) {
-                $this->command->info("Memindahkan: $old...");
+            if (Schema::hasTable($new) && Schema::connection('latihan')->hasTable($old)) {
+                $this->command->info("Memindahkan: $old -> $new...");
                 DB::table($new)->truncate();
-                $cols = Schema::getColumnListing($new);
-                foreach (DB::connection('latihan')->table($old)->get() as $row) {
-                    $data = (array)$row;
-                    // Mapping Manual untuk jpb_pin karena di target kolomnya 'type'
-                    if ($old == 'jpb_pin' && isset($data['pin_type'])) {
-                        $data['type'] = $data['pin_type'];
-                    }
 
-                    // Filter agar hanya kolom yang ada di tabel tujuan yang dimasukkan
-                    $filtered = array_intersect_key($data, array_flip($cols));
-                    DB::table($new)->insert($filtered);
+                $cols = Schema::getColumnListing($new);
+                $sourceData = DB::connection('latihan')->table($old)->get();
+                $insertData = [];
+
+                foreach ($sourceData as $row) {
+                    $data = (array)$row;
+                    $filtered = [];
+
+                    foreach ($cols as $col) {
+                        // Fix perubahan nama kolom khusus untuk tabel bonus
+                        if ($old === 'jpb_bonus' && $col === 'type') {
+                            $filtered[$col] = $data['bonus_type'] ?? 1;
+                        }
+                        // Sedot jika ada
+                        elseif (array_key_exists($col, $data)) {
+                            $val = $data[$col];
+                            // Bersihkan semua kolom tanggal
+                            if (str_contains($col, 'date') || str_contains($col, 'time')) {
+                                $val = $this->cleanDate($val, true);
+                            }
+                            $filtered[$col] = $val;
+                        }
+                        // Tambal kolom angka yang wajib ada tapi tidak ada di database lama
+                        else {
+                            if (in_array($col, ['nominal_receipt', 'tax', 'auto_ro', 'admin_fund', 'amount_tax'])) {
+                                $filtered[$col] = 0;
+                            }
+                        }
+                    }
+                    $insertData[] = $filtered;
+                }
+
+                if (!empty($insertData)) {
+                    foreach (array_chunk($insertData, 500) as $chunk) {
+                        DB::table($new)->insert($chunk);
+                    }
                 }
             }
         }
 
         DB::statement('SET FOREIGN_KEY_CHECKS = 1;');
-        $this->command->info("MIGRASI SELESAI TOTAL!");
+        $this->command->info("MIGRASI SELESAI TOTAL & SELURUH KOLOM BERHASIL DISEDOT!");
+    }
+
+    // Fungsi otomatis untuk mengatasi error format waktu 0000-00-00
+    private function cleanDate($val, $allowNull = false)
+    {
+        if (empty($val) || $val === '0000-00-00 00:00:00' || $val === '0000-00-00') {
+            return $allowNull ? null : now()->format('Y-m-d H:i:s');
+        }
+        return $val;
     }
 }
