@@ -1,6 +1,33 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Laravel\Fortify\Http\Controllers\RegisteredUserController;
+use App\Livewire\Frontend\Referral;
+use App\Livewire\Member\MemberUpgrade;
+use App\Livewire\Member\MemberRo;
+use App\Livewire\Member\MemberList;
+use App\Livewire\Member\MemberGroup;
+use App\Livewire\Member\MemberTree;
+use App\Livewire\Member\MemberGeneration;
+use App\Livewire\Commission\Bonus;
+use App\Livewire\Commission\Ewallet;
+use App\Livewire\Commission\Statement;
+use App\Livewire\Commission\Withdraw;
+use App\Livewire\Commission\Transfer;
+use App\Livewire\Stockist\StockistNew;
+use App\Livewire\Stockist\StockistList;
+use App\Livewire\Stockist\ProductStock;
+use App\Livewire\Stockist\StockAdjustment;
+use App\Livewire\Pin\PinGenerate;
+use App\Livewire\Pin\PinTransfer;
+use App\Livewire\Pin\PinHistory;
+use App\Livewire\Report\Sales;
+use App\Livewire\Report\Omzet;
+use App\Livewire\Report\Reward;
+use App\Livewire\Shopping\ShopList;
+use App\Livewire\Shopping\Cart;
+use App\Livewire\Shopping\Checkout;
+use App\Livewire\Shopping\Invoice;
 
 // 1. Halaman Publik / Redirect
 Route::get('/', function () {
@@ -15,56 +42,56 @@ Route::view('dashboard', 'dashboard')
 // 3. Rute Aplikasi Lengkap (Pindahan CI3 ke Livewire)
 Route::middleware(['auth', 'verified'])->group(function () {
 
-    Route::get('/member/new', [\Laravel\Fortify\Http\Controllers\RegisteredUserController::class, 'create'])
+    Route::get('/member/new', [RegisteredUserController::class, 'create'])
         ->name('member.new');
 
     // Member Page Routes
     Route::prefix('member')->name('member.')->group(function () {
-        Route::get('upgrade', \App\Livewire\Member\MemberUpgrade::class)->name('upgrade');
-        Route::get('ro', \App\Livewire\Member\MemberRo::class)->name('ro');
-        Route::get('lists', \App\Livewire\Member\MemberList::class)->name('lists');
-        Route::get('group/{id?}', \App\Livewire\Member\MemberGroup::class)->name('group');
-        Route::get('tree/{id?}', \App\Livewire\Member\MemberTree::class)->name('tree');
-        Route::get('generation/{id?}', \App\Livewire\Member\MemberGeneration::class)->name('generation');
+        Route::get('upgrade', MemberUpgrade::class)->name('upgrade');
+        Route::get('ro', MemberRo::class)->name('ro');
+        Route::get('lists', MemberList::class)->name('lists');
+        Route::get('group/{id?}', MemberGroup::class)->name('group');
+        Route::get('tree/{id?}', MemberTree::class)->name('tree');
+        Route::get('generation/{id?}', MemberGeneration::class)->name('generation');
     });
 
     // Commission & E-Wallet Routes
     Route::prefix('commission')->name('commission.')->group(function () {
-        Route::get('bonus', \App\Livewire\Commission\Bonus::class)->name('bonus');
-        Route::get('ewallet', \App\Livewire\Commission\Ewallet::class)->name('ewallet');
-        Route::get('statement', \App\Livewire\Commission\Statement::class)->name('statement');
-        Route::get('withdraw', \App\Livewire\Commission\Withdraw::class)->name('withdraw');
-        Route::get('transfer', \App\Livewire\Commission\Transfer::class)->name('transfer');
+        Route::get('bonus', Bonus::class)->name('bonus');
+        Route::get('ewallet', Ewallet::class)->name('ewallet');
+        Route::get('statement', Statement::class)->name('statement');
+        Route::get('withdraw', Withdraw::class)->name('withdraw');
+        Route::get('transfer', Transfer::class)->name('transfer');
     });
 
     // Stockist Page Routes
     Route::prefix('stockist')->name('stockist.')->group(function () {
-        Route::get('new', \App\Livewire\Stockist\StockistNew::class)->name('new');
-        Route::get('lists', \App\Livewire\Stockist\StockistList::class)->name('lists');
-        Route::get('product-stock', \App\Livewire\Stockist\ProductStock::class)->name('product-stock');
-        Route::get('adjustment', \App\Livewire\Stockist\StockAdjustment::class)->name('adjustment');
+        Route::get('new', StockistNew::class)->name('new');
+        Route::get('lists', StockistList::class)->name('lists');
+        Route::get('product-stock', ProductStock::class)->name('product-stock');
+        Route::get('adjustment', StockAdjustment::class)->name('adjustment');
     });
 
     // PIN Page Routes
     Route::prefix('pin')->name('pin.')->group(function () {
-        Route::get('generate', \App\Livewire\Pin\PinGenerate::class)->name('generate');
-        Route::get('transfer', \App\Livewire\Pin\PinTransfer::class)->name('transfer');
-        Route::get('history', \App\Livewire\Pin\PinHistory::class)->name('history');
+        Route::get('generate', PinGenerate::class)->name('generate');
+        Route::get('transfer', PinTransfer::class)->name('transfer');
+        Route::get('history', PinHistory::class)->name('history');
     });
 
     // Report Page Routes
     Route::prefix('report')->name('report.')->group(function () {
-        Route::get('sales', \App\Livewire\Report\Sales::class)->name('sales');
-        Route::get('omzet', \App\Livewire\Report\Omzet::class)->name('omzet');
-        Route::get('reward', \App\Livewire\Report\Reward::class)->name('reward');
+        Route::get('sales', Sales::class)->name('sales');
+        Route::get('omzet', Omzet::class)->name('omzet');
+        Route::get('reward', Reward::class)->name('reward');
     });
 
     // Shopping Routes
     Route::prefix('shopping')->name('shopping.')->group(function () {
-        Route::get('shop', \App\Livewire\Shopping\ShopList::class)->name('list');
-        Route::get('cart', \App\Livewire\Shopping\Cart::class)->name('cart');
-        Route::get('checkout', \App\Livewire\Shopping\Checkout::class)->name('checkout');
-        Route::get('invoice/{id}', \App\Livewire\Shopping\Invoice::class)->name('invoice');
+        Route::get('shop', ShopList::class)->name('list');
+        Route::get('cart', Cart::class)->name('cart');
+        Route::get('checkout', Checkout::class)->name('checkout');
+        Route::get('invoice/{id}', Invoice::class)->name('invoice');
     });
 });
 
@@ -72,4 +99,4 @@ Route::middleware(['auth', 'verified'])->group(function () {
 require __DIR__ . '/settings.php';
 
 // 5. Fallback (Sistem Referral)
-Route::fallback(\App\Livewire\Frontend\Referral::class);
+Route::fallback(Referral::class);
